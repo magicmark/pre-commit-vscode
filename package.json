@@ -1,0 +1,44 @@
+{
+  "name": "pre-commit-vscode",
+  "displayName": "pre-commit-vscode",
+  "description": "Run and manage pre-commit hooks from VSCode",
+  "version": "0.0.1",
+  "publisher": "Mark Larah <mark@larah.me>",
+  "repository": "todo",
+  "engines": {
+    "vscode": "^1.34.0"
+  },
+  "keywords": [
+    "pre-commit",
+    "precommit"
+  ],
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "cp -r src out",
+    "lint": "echo todo",
+    "watch": "echo todo"
+  },
+  "categories": [
+    "Linters",
+    "Formatters",
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:pre-commit-vscode.run"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "pre-commit-vscode.run",
+        "title": "pre-commit run (Run pre-commit hook(s) for file)"
+      }
+    ]
+  },
+  "dependencies": {
+    "execa": "^3.4.0",
+    "find-up": "^4.1.0",
+    "js-yaml": "^3.13.1",
+    "lodash": "^4.17.15"
+  }
+}
