@@ -14,4 +14,4 @@ jobs:
     - name: Publish to marketplace
       run: |
         vsce package
-        vsce publish
+        vsce publish -P ${{secrets.VSCODE_PUBLISH_KEY}}
