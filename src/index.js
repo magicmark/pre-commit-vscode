@@ -1,13 +1,12 @@
-const vscode = require('vscode');
-const yaml = require('js-yaml');
-const { promisify } = require('util');
-const fs = require('fs');
-const findUp = require('find-up');
-const _ = require('lodash');
-const execa = require('execa');
-const path = require('path');
-const pathExists = require('path-exists');
-const pLocate = require('p-locate');
+import vscode from 'vscode';
+import yaml from 'js-yaml');
+import { promisify } from 'util';
+import fs from 'fs';
+import findUp from 'find-up';
+import _ from 'lodash';
+import path from 'path';
+import pathExists from 'path-exists';
+import pLocate from 'p-locate';
 
 const readFileAsync = promisify(fs.readFile);
 
@@ -23,12 +22,16 @@ async function getPreCommitConfig () {
 }
 
 /**
- * TODO: try and use what's on $PATH instead
+ * TODO: A better way of getting the path to pre-commit
+ * - Try and use what's on $PATH instead?
+ * - Or see if using .git/hooks/pre-commit is feasible?
+ * - Maybe a per-project user specified config?
  */
 async function getPreCommitPath () {
 	const possiblePaths = [
-		['venv', 'pre-commit'],
-		['virtualenv_run', 'pre-commit'],
+		['venv', 'bin', 'pre-commit'],
+		['virtualenv_run', 'bin', 'pre-commit'],
+		['virtualenv', 'bin', 'pre-commit'],
 	].map(p => path.join(vscode.workspace.rootPath, ...p));
 
 	const foundPath = await pLocate(possiblePaths, file => pathExists(file));
@@ -41,8 +44,6 @@ async function getPreCommitPath () {
 }
 
 function activate(context) {
-	console.log('Setting up pre-commit-vscode');
-
 	context.subscriptions.push(vscode.commands.registerCommand('pre-commit-vscode.run', async () => {
 		if (!vscode.window.activeTextEditor) {
 			return vscode.window.showInformationMessage('You must open a file first!');
@@ -75,7 +76,6 @@ function activate(context) {
 	}))
 }
 
-// this method is called when your extension is deactivated
 function deactivate() {}
 
 module.exports = {

@@ -2,7 +2,7 @@
   "name": "pre-commit-vscode",
   "displayName": "pre-commit-vscode",
   "description": "Run and manage pre-commit hooks from VSCode",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "publisher": "MarkLarah",
   "repository": "https://github.com/magicmark/pre-commit-vscode",
   "engines": {
@@ -39,7 +39,6 @@
     "build"
   ],
   "dependencies": {
-    "execa": "^3.4.0",
     "find-up": "^4.1.0",
     "js-yaml": "^3.13.1",
     "lodash": "^4.17.15",
@@ -52,6 +51,7 @@
     "@babel/preset-react": "^7.7.4",
     "babel-loader": "^8.0.6",
     "babel-plugin-dynamic-import-node": "^2.3.0",
+    "import-sort-cli": "^6.0.0",
     "neutrino": "^8.3.0",
     "vsce": "^1.70.0",
     "webpack": "^4.41.2",

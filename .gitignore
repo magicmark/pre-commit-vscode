@@ -1,4 +1,5 @@
-node_modules
-out
 *.vsix
 build
+node_modules
+out
+venv
