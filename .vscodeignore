@@ -1,2 +1,5 @@
 node_modules
 venv
+.activate.sh
+.deactivate.sh
+.github

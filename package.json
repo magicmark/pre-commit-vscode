@@ -2,7 +2,7 @@
     "name": "pre-commit-vscode",
     "displayName": "pre-commit-vscode",
     "description": "Run and manage pre-commit hooks from VSCode",
-    "version": "0.0.5",
+    "version": "0.0.6",
     "publisher": "MarkLarah",
     "repository": "https://github.com/magicmark/pre-commit-vscode",
     "engines": {
