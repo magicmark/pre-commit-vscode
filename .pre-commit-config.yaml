@@ -1,25 +1,24 @@
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.4.0
-    hooks:
-    -   id: check-added-large-files
-    -   id: check-case-conflict
-    -   id: check-json
-    -   id: check-merge-conflict
-    -   id: check-yaml
-    -   id: end-of-file-fixer
-    -   id: requirements-txt-fixer
-    -   id: sort-simple-yaml
-    -   id: trailing-whitespace
--   repo: local
-    hooks:
-    -   id: sort-imports
-        name: sort-imports
-        entry: yarn import-sort
-        language: system
-        files: \.js$
-        args: ['--write']
--   repo: https://github.com/prettier/prettier
-    rev: 1.19.1
-    hooks:
-    -   id: prettier
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v2.4.0
+      hooks:
+          - id: check-added-large-files
+          - id: check-case-conflict
+          - id: check-merge-conflict
+          - id: check-yaml
+          - id: end-of-file-fixer
+          - id: requirements-txt-fixer
+          - id: sort-simple-yaml
+          - id: trailing-whitespace
+    - repo: local
+      hooks:
+          - id: sort-imports
+            name: sort-imports
+            entry: yarn import-sort
+            language: system
+            files: \.js$
+            args: ['--write']
+    - repo: https://github.com/prettier/prettier
+      rev: 1.19.1
+      hooks:
+          - id: prettier
