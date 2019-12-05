@@ -2,7 +2,7 @@
 
 A VSCode Extension to run [pre-commit](https://pre-commit.com/) hooks on the current file!
 
-(Uses the project's .pre-commit-config.yaml - assumes you have pre-commit set up)
+(Uses the project's `.pre-commit-config.yaml` - assumes you have pre-commit set up)
 
 ## Usage
 
