@@ -1,17 +1,17 @@
 name: Publish to marketplace
 
 on:
-  release:
-    types: [created]
+    release:
+        types: [created]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v1
-    - name: Build App
-      run: make build
-    - name: Publish to marketplace
-      run: |
-        vsce package
-        vsce publish -P ${{secrets.VSCODE_PUBLISH_KEY}}
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v1
+            - name: Build App
+              run: make build
+            - name: Publish to marketplace
+              run: |
+                  yarn vsce package
+                  yarn vsce publish -P ${{secrets.VSCODE_PUBLISH_KEY}}
