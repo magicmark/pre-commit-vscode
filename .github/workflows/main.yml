@@ -14,4 +14,4 @@ jobs:
             - name: Publish to marketplace
               run: |
                   yarn vsce package
-                  yarn vsce publish -P ${{secrets.VSCODE_PUBLISH_KEY}}
+                  yarn vsce publish --pat "${{secrets.VSCODE_PUBLISH_KEY}}"
