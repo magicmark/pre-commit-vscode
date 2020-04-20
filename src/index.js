@@ -1,3 +1,4 @@
+import invariant from 'assert';
 import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
@@ -5,8 +6,6 @@ import { promisify } from 'util';
 import findUp from 'find-up';
 import yaml from 'js-yaml';
 import _ from 'lodash';
-import pLocate from 'p-locate';
-import pathExists from 'path-exists';
 import vscode from 'vscode';
 
 const readFileAsync = promisify(fs.readFile);
@@ -18,36 +17,32 @@ const readFileAsync = promisify(fs.readFile);
 async function getProjectRoot() {
     const currFile = vscode.window.activeTextEditor.document.fileName;
     const configPath = await findUp('.pre-commit-config.yaml', { cwd: currFile });
+    invariant(configPath, `Could not find .pre-commit-config.yaml as a parent of ${currFile}`);
 
-    if (configPath) {
-        return path.dirname(configPath);
-    }
+    return path.dirname(configPath);
 }
 
 async function getPreCommitConfig(projectRoot) {
     const configPath = path.join(projectRoot, '.pre-commit-config.yaml');
     const configFile = await readFileAsync(configPath, { encoding: 'utf8' });
+    invariant(configFile, `Could not read .pre-commit-config.yaml at ${configPath}`);
+
     return yaml.safeLoad(configFile);
 }
 
 /**
- * TODO: A better way of getting the path to pre-commit
- * - Try and use what's on $PATH instead?
- * - Or see if using .git/hooks/pre-commit is feasible?
- * - Maybe a per-project user specified config?
+ * Get path to python by spying on .git/hooks/pre-commit!
+ * (So we can do $PYTHON -m pre-commit)
+ * See: https://twitter.com/codewithanthony/status/1202499585593110528?s=20
  */
-async function getPreCommitPath(projectRoot) {
-    const possiblePaths = [
-        ['venv', 'bin', 'pre-commit'],
-        ['virtualenv_run', 'bin', 'pre-commit'],
-        ['virtualenv', 'bin', 'pre-commit'],
-    ].map(p => path.join(projectRoot, ...p));
+async function getPythonPath(projectRoot) {
+    const gitHooksPrecommit = path.join(projectRoot, '.git', 'hooks', 'pre-commit');
+    const gitHookFile = await readFileAsync(gitHooksPrecommit, { encoding: 'utf8' });
+    // Sneaky! .git/bin/pre-commit will tell us where python is
+    const match = gitHookFile.match(/^INSTALL_PYTHON = '(.+?)'$/m);
+    invariant(match, `Could not find INSTALL_PYTHON in ${gitHooksPrecommit}`);
 
-    const foundPath = await pLocate(possiblePaths, file => pathExists(file));
-
-    if (foundPath) {
-        return foundPath;
-    }
+    return match[1];
 }
 
 export function activate(context) {
@@ -59,30 +54,36 @@ export function activate(context) {
                 return vscode.window.showInformationMessage('You must open a file first!');
             }
 
-            const projectRoot = await getProjectRoot();
-            if (!projectRoot) {
-                return vscode.window.showErrorMessage(
-                    'Could not find a .pre-commit-config.yaml file in a parent directory!',
-                );
+            let projectRoot;
+            try {
+                projectRoot = await getProjectRoot();
+            } catch (err) {
+                console.error(err);
+                return vscode.window.showErrorMessage(err.message);
             }
 
             let config;
             try {
                 config = await getPreCommitConfig(projectRoot);
-            } catch (e) {
-                console.error(e);
-                return vscode.window.showErrorMessage('Could not read .pre-commit-config.yaml!');
+            } catch (err) {
+                console.error(err);
+                return vscode.window.showErrorMessage(err.message);
             }
 
             const hooks = _.flatten(config.repos.map(r => r.hooks.map(h => h.id)));
             const hook = await vscode.window.showQuickPick(['Run All Hooks', ...hooks], { canPickMany: false });
 
-            const preCommit = await getPreCommitPath(projectRoot);
-            if (!preCommit) {
-                return vscode.window.showErrorMessage('Could not find an installed version of pre-commit!');
+            let pythonPath;
+            try {
+                pythonPath = await getPythonPath(projectRoot);
+            } catch (err) {
+                console.error(err);
+                return vscode.window.showErrorMessage(err.message);
             }
 
-            const terminal = vscode.window.createTerminal(`pre-commit run`, preCommit, [
+            const terminal = vscode.window.createTerminal(`pre-commit run`, pythonPath, [
+                '-m',
+                'pre_commit',
                 'run',
                 ...(hook === 'Run All Hooks' ? [] : [hook]),
                 '--files',
