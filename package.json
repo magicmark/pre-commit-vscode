@@ -50,7 +50,7 @@
         "@babel/preset-env": "^7.7.6",
         "@babel/preset-react": "^7.8.3",
         "babel-loader": "^8.0.6",
-        "babel-plugin-dynamic-import-node": "^2.3.0",
+        "babel-plugin-dynamic-import-node": "^2.3.2",
         "import-sort-cli": "^6.0.0",
         "import-sort-style-module": "^6.0.0",
         "neutrino": "^9.1.0",
