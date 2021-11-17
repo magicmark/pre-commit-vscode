@@ -39,6 +39,7 @@ async function getPreCommitConfig(projectRoot) {
 async function getPreCommitPath(projectRoot) {
     const possiblePaths = [
         ['venv', 'bin', 'pre-commit'],
+        ['.venv', 'bin', 'pre-commit'],
         ['virtualenv_run', 'bin', 'pre-commit'],
         ['virtualenv', 'bin', 'pre-commit'],
     ].map(p => path.join(projectRoot, ...p));
