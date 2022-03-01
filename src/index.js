@@ -5,9 +5,11 @@ import { promisify } from 'util';
 import findUp from 'find-up';
 import yaml from 'js-yaml';
 import _ from 'lodash';
-import pLocate from 'p-locate';
-import pathExists from 'path-exists';
 import vscode from 'vscode';
+
+import getPreCommitPath from './location';
+
+const { spawn } = require('child_process');
 
 const readFileAsync = promisify(fs.readFile);
 
@@ -28,27 +30,6 @@ async function getPreCommitConfig(projectRoot) {
     const configPath = path.join(projectRoot, '.pre-commit-config.yaml');
     const configFile = await readFileAsync(configPath, { encoding: 'utf8' });
     return yaml.safeLoad(configFile);
-}
-
-/**
- * TODO: A better way of getting the path to pre-commit
- * - Try and use what's on $PATH instead?
- * - Or see if using .git/hooks/pre-commit is feasible?
- * - Maybe a per-project user specified config?
- */
-async function getPreCommitPath(projectRoot) {
-    const possiblePaths = [
-        ['venv', 'bin', 'pre-commit'],
-        ['.venv', 'bin', 'pre-commit'],
-        ['virtualenv_run', 'bin', 'pre-commit'],
-        ['virtualenv', 'bin', 'pre-commit'],
-    ].map(p => path.join(projectRoot, ...p));
-
-    const foundPath = await pLocate(possiblePaths, file => pathExists(file));
-
-    if (foundPath) {
-        return foundPath;
-    }
 }
 
 export function activate(context) {
@@ -75,7 +56,7 @@ export function activate(context) {
                 return vscode.window.showErrorMessage('Could not read .pre-commit-config.yaml!');
             }
 
-            const hooks = _.flatten(config.repos.map(r => r.hooks.map(h => h.id)));
+            const hooks = _.flatten(config.repos.map((r) => r.hooks.map((h) => h.id)));
             const hook = await vscode.window.showQuickPick(['Run All Hooks', ...hooks], { canPickMany: false });
 
             const preCommit = await getPreCommitPath(projectRoot);
@@ -83,14 +64,54 @@ export function activate(context) {
                 return vscode.window.showErrorMessage('Could not find an installed version of pre-commit!');
             }
 
-            const terminal = vscode.window.createTerminal(`pre-commit run`, preCommit, [
-                'run',
-                ...(hook === 'Run All Hooks' ? [] : [hook]),
-                '--files',
-                currFile,
-            ]);
+            // used to store stdout/stderr from the pre-commit process
+            let buffer = '';
+
+            const writeEmitter = new vscode.EventEmitter();
+            const closeEmitter = new vscode.EventEmitter();
+
+            const pty = {
+                onDidWrite: writeEmitter.event,
+                onDidClose: closeEmitter.event,
+                open: () => writeEmitter.fire(`Running pre-commit from ${preCommit}...\n\r`),
+                close: () => {},
+            };
+
+            const terminal = vscode.window.createTerminal({
+                name: 'pre-commit run',
+                pty,
+            });
 
             terminal.show();
+
+            const proc = spawn(
+                preCommit,
+                ['run', ...(hook === 'Run All Hooks' ? [] : [hook]), '--color', 'always', '--files', currFile],
+                {
+                    cwd: projectRoot,
+                },
+            );
+
+            function handleData(data) {
+                buffer += data.toString();
+                const linesToPrint = buffer.split('\n').slice(0, -1);
+                linesToPrint.forEach((line) => {
+                    writeEmitter.fire(`${line}\n\r`);
+                });
+                buffer = buffer.split('\n').slice(-1).join('');
+            }
+
+            proc.stdout.on('data', handleData);
+            proc.stderr.on('data', handleData);
+            proc.on('close', (code) => {
+                writeEmitter.fire(`${buffer}\n\r`);
+
+                // If the exit code wasn't 0, leave the output open for users
+                // to see and debug.
+                if (code === 0) {
+                    terminal.dispose();
+                }
+            });
         }),
     );
 }

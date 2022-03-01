@@ -4,16 +4,12 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "type": "npm",
-            "script": "watch",
-            "problemMatcher": "$tsc-watch",
-            "isBackground": true,
-            "presentation": {
-                "reveal": "never"
-            },
-            "group": {
-                "kind": "build",
-                "isDefault": true
+            "label": "webpack",
+            "type": "shell",
+            "command": "echo \"not implemented\"",
+            "isBackground": false,
+            "osx": {
+                "command": "PATH=\"$PATH:/usr/local/bin\" yarn build"
             }
         }
     ]

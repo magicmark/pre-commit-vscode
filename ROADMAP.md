@@ -1,3 +1,2 @@
 -   Run on save?
--   Don't immediately close the window if exit = 1
 -   Specify path to pre-commit config
